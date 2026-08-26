@@ -1,5 +1,7 @@
+import { ConflictException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Test, TestingModule } from '@nestjs/testing';
+import { Types } from 'mongoose';
 import { User } from './schemas/user.schema';
 import { UsersService } from './users.service';
 
@@ -65,6 +67,78 @@ describe('UsersService', () => {
     await service.setHashedRefreshToken('user-id', 'hashed-token');
     expect(model.findByIdAndUpdate).toHaveBeenCalledWith('user-id', {
       hashedRefreshToken: 'hashed-token',
+    });
+  });
+
+  describe('favorites', () => {
+    function mockUserWithFavorites(favoriteGrants: Types.ObjectId[]) {
+      const user = {
+        favoriteGrants,
+        save: jest.fn().mockImplementation(function (this: {
+          favoriteGrants: Types.ObjectId[];
+        }) {
+          return Promise.resolve(this);
+        }),
+      };
+      model.findById.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(user),
+      });
+      return user;
+    }
+
+    it('adds a grant to favorites when under the limit', async () => {
+      const user = mockUserWithFavorites([]);
+      const grantId = new Types.ObjectId().toString();
+
+      await service.addFavorite('user-id', grantId, 10);
+
+      expect(user.favoriteGrants).toHaveLength(1);
+      expect(user.save).toHaveBeenCalled();
+    });
+
+    it('is idempotent when the grant is already saved', async () => {
+      const existing = new Types.ObjectId();
+      const user = mockUserWithFavorites([existing]);
+
+      await service.addFavorite('user-id', existing.toString(), 10);
+
+      expect(user.favoriteGrants).toHaveLength(1);
+      expect(user.save).not.toHaveBeenCalled();
+    });
+
+    it('throws ConflictException when the plan limit is reached', async () => {
+      const user = mockUserWithFavorites([
+        new Types.ObjectId(),
+        new Types.ObjectId(),
+      ]);
+      const grantId = new Types.ObjectId().toString();
+
+      await expect(service.addFavorite('user-id', grantId, 2)).rejects.toThrow(
+        ConflictException,
+      );
+      expect(user.favoriteGrants).toHaveLength(2);
+    });
+
+    it('allows unlimited favorites when maxFavorites is null', async () => {
+      const user = mockUserWithFavorites([
+        new Types.ObjectId(),
+        new Types.ObjectId(),
+      ]);
+      const grantId = new Types.ObjectId().toString();
+
+      await service.addFavorite('user-id', grantId, null);
+
+      expect(user.favoriteGrants).toHaveLength(3);
+    });
+
+    it('removes a grant from favorites', async () => {
+      const target = new Types.ObjectId();
+      const user = mockUserWithFavorites([target, new Types.ObjectId()]);
+
+      await service.removeFavorite('user-id', target.toString());
+
+      expect(user.favoriteGrants).toHaveLength(1);
+      expect(user.save).toHaveBeenCalled();
     });
   });
 });

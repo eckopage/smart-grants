@@ -7,6 +7,9 @@ import { validateEnv } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
 import { GrantsModule } from './grants/grants.module';
 import { HealthModule } from './health/health.module';
+import { PaymentsModule } from './payments/payments.module';
+import { PlansModule } from './plans/plans.module';
+import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -21,6 +24,9 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     AuthModule,
     GrantsModule,
+    PlansModule,
+    SubscriptionsModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

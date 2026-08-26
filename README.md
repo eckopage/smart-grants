@@ -4,9 +4,9 @@ Platforma agregująca dotacje i kredyty unijne oraz krajowe dla polskich
 przedsiębiorców (MŚP). Model: subskrypcja dla przedsiębiorców + marketplace
 leadów dla firm doradczych.
 
-> **Status:** Faza 3 — mapa jako główny widok przeglądania dotacji. Kolejne
-> fazy (płatności, marketplace firm, workspace aplikacji, scraper, SEO) będą
-> dodawane etapami — patrz specyfikacja projektu.
+> **Status:** Faza 4 — płatności PayU + plany subskrypcji z konfigurowalnymi
+> limitami. Kolejne fazy (marketplace firm, workspace aplikacji, scraper,
+> SEO) będą dodawane etapami — patrz specyfikacja projektu.
 
 ## Struktura repozytorium
 
@@ -96,15 +96,38 @@ serwisowym `mongo:7`.
   województwo, kategoria, tagi, typ, status naboru, kwota, termin) i widok
   szczegółowy dotacji
 - `POST/GET/PATCH/DELETE /admin/grants(/:id)` — CRUD dotacji dla roli `admin`
+- `GET /plans?audience=entrepreneur|company` — publiczna lista aktywnych
+  planów; `POST/GET/PATCH/DELETE /admin/plans(/:key)` — CRUD planów dla roli
+  `admin` (ceny i limity konfigurowalne w bazie, nie hardkodowane)
+- `POST /payments/checkout` — tworzy zamówienie PayU dla wybranego planu i
+  zwraca URL do przekierowania; `POST /payments/webhook` — odbiera
+  powiadomienia PayU (IPN), weryfikuje podpis MD5 i aktywuje subskrypcję
+- `GET /subscriptions/me` — aktywna subskrypcja zalogowanego użytkownika
+- `GET/POST/DELETE /users/me/favorites(/:grantId)` — ulubione dotacje;
+  dodawanie wymaga aktywnej subskrypcji i respektuje limit `maxFavorites`
+  planu użytkownika
 
 ### Dane przykładowe
 
 ```bash
 npm run seed:grants --workspace=api
+npm run seed:plans --workspace=api
 ```
 
-Wypełnia bazę kilkoma przykładowymi dotacjami (dotacja regionalna, kredyt
-BGK, program centralny UE) do celów developerskich.
+`seed:grants` wypełnia bazę kilkoma przykładowymi dotacjami (dotacja
+regionalna, kredyt BGK, program centralny UE). `seed:plans` tworzy plany
+Starter/Pro/Business (przedsiębiorcy) oraz Basic Listing/Featured/Premium
+Leads (firmy doradcze) z cennika ze specyfikacji.
+
+### Płatności (PayU)
+
+Integracja PayU jest zbudowana za interfejsem `PaymentProvider`
+(`apps/api/src/payments/providers`), więc dodanie kolejnego operatora (np.
+Stripe pod inne rynki) nie wymaga zmian w logice checkout/webhooka.
+Domyślnie `PAYU_API_URL` wskazuje na środowisko sandbox
+(`secure.snd.payu.com`) — do pełnego przetestowania płatności potrzebne są
+prawdziwe dane testowe z panelu PayU (`PAYU_CLIENT_ID`, `PAYU_CLIENT_SECRET`,
+`PAYU_POS_ID`, `PAYU_SECOND_KEY` w `.env`).
 
 ## Architektura pod przyszłe wymagania
 

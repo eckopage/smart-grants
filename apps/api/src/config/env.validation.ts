@@ -46,6 +46,26 @@ class EnvironmentVariables {
   @IsString()
   @IsOptional()
   JWT_REFRESH_EXPIRES_IN: string = '7d';
+
+  @IsString()
+  @IsOptional()
+  PAYU_API_URL: string = 'https://secure.snd.payu.com';
+
+  @IsString()
+  @IsOptional()
+  PAYU_CLIENT_ID?: string;
+
+  @IsString()
+  @IsOptional()
+  PAYU_CLIENT_SECRET?: string;
+
+  @IsString()
+  @IsOptional()
+  PAYU_POS_ID?: string;
+
+  @IsString()
+  @IsOptional()
+  PAYU_SECOND_KEY?: string;
 }
 
 export function validateEnv(config: Record<string, unknown>) {

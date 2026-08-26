@@ -7,6 +7,7 @@ import { GrantDetailPage } from './pages/GrantDetailPage';
 import { GrantsPage } from './pages/GrantsPage';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
+import { PricingPage } from './pages/PricingPage';
 import { RegisterPage } from './pages/RegisterPage';
 
 const queryClient = new QueryClient();
@@ -20,6 +21,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/grants" element={<GrantsPage />} />
             <Route path="/grants/:slug" element={<GrantDetailPage />} />
+            <Route path="/pricing" element={<PricingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
             <Route
