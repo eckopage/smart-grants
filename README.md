@@ -4,10 +4,9 @@ Platforma agregująca dotacje i kredyty unijne oraz krajowe dla polskich
 przedsiębiorców (MŚP). Model: subskrypcja dla przedsiębiorców + marketplace
 leadów dla firm doradczych.
 
-> **Status:** Faza 2 — model `Grant` + CRUD admina + lista/filtrowanie/widok
-> szczegółowy. Kolejne fazy (mapa, płatności, marketplace firm, workspace
-> aplikacji, scraper, SEO) będą dodawane etapami — patrz specyfikacja
-> projektu.
+> **Status:** Faza 3 — mapa jako główny widok przeglądania dotacji. Kolejne
+> fazy (płatności, marketplace firm, workspace aplikacji, scraper, SEO) będą
+> dodawane etapami — patrz specyfikacja projektu.
 
 ## Struktura repozytorium
 
@@ -109,9 +108,13 @@ BGK, program centralny UE) do celów developerskich.
 
 ## Architektura pod przyszłe wymagania
 
-- **Mapa jako główny widok przeglądania dotacji** zostanie dodana w Fazie 3
-  za interfejsem `MapProvider`, tak aby dostawcę mapy (Google Maps →
-  Leaflet/Mapbox) można było podmienić bez zmian w logice biznesowej.
+- **Mapa jako główny widok przeglądania dotacji** — zaimplementowana za
+  interfejsem `MapProvider` (`apps/web/src/lib/map`). Domyślny provider to
+  Leaflet + OpenStreetMap (bez płatnego API i klucza), z granicami
+  województw (`public/geo/wojewodztwa.geojson`). Podmiana na Google
+  Maps/Mapbox w przyszłości = nowa implementacja `MapProviderComponent` +
+  zmiana jednego eksportu w `lib/map/index.ts`, bez zmian w logice
+  biznesowej (`GrantsPage`).
 - **Integracje infrastrukturalne** (storage plików, e-mail, kolejki) będą
   budowane za interfejsami (`StorageProvider`, `MailProvider`,
   `QueueProvider`), żeby przejście z tanich usług startowych (Cloudflare R2,

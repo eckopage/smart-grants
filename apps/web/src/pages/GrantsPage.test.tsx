@@ -1,8 +1,9 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router-dom';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { GrantsListPage } from './GrantsListPage';
+import { GrantsPage } from './GrantsPage';
 import type { PaginatedGrants } from '../types/grant';
 
 const samplePage: PaginatedGrants = {
@@ -29,6 +30,28 @@ const samplePage: PaginatedGrants = {
   limit: 20,
 };
 
+const emptyPage: PaginatedGrants = { items: [], total: 0, page: 1, limit: 20 };
+
+function stubFetch(grantsResponse: PaginatedGrants) {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn().mockImplementation((url: string) => {
+      if (url.toString().includes('/geo/wojewodztwa.geojson')) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: () => Promise.resolve({ type: 'FeatureCollection', features: [] }),
+        });
+      }
+      return Promise.resolve({
+        ok: true,
+        status: 200,
+        json: () => Promise.resolve(grantsResponse),
+      });
+    }),
+  );
+}
+
 function renderPage() {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { retry: false } },
@@ -36,28 +59,23 @@ function renderPage() {
   return render(
     <QueryClientProvider client={queryClient}>
       <MemoryRouter>
-        <GrantsListPage />
+        <GrantsPage />
       </MemoryRouter>
     </QueryClientProvider>,
   );
 }
 
-describe('GrantsListPage', () => {
+describe('GrantsPage', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
   });
 
-  it('renders fetched grants', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve(samplePage),
-      }),
-    );
+  it('renders fetched grants in list view', async () => {
+    stubFetch(samplePage);
+    const user = userEvent.setup();
 
     renderPage();
+    await user.click(screen.getByRole('button', { name: 'Lista' }));
 
     await waitFor(() =>
       expect(screen.getByText('Dotacja testowa')).toBeInTheDocument(),
@@ -65,14 +83,7 @@ describe('GrantsListPage', () => {
   });
 
   it('shows an empty state when there are no results', async () => {
-    vi.stubGlobal(
-      'fetch',
-      vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ items: [], total: 0, page: 1, limit: 20 }),
-      }),
-    );
+    stubFetch(emptyPage);
 
     renderPage();
 
@@ -80,6 +91,16 @@ describe('GrantsListPage', () => {
       expect(
         screen.getByText('Brak wyników dla wybranych filtrów.'),
       ).toBeInTheDocument(),
+    );
+  });
+
+  it('defaults to the map view', () => {
+    stubFetch(emptyPage);
+
+    renderPage();
+
+    expect(screen.getByRole('button', { name: 'Mapa' })).toHaveClass(
+      'bg-slate-900',
     );
   });
 });

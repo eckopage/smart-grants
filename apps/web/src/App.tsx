@@ -4,7 +4,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
 import { DashboardPage } from './pages/DashboardPage';
 import { GrantDetailPage } from './pages/GrantDetailPage';
-import { GrantsListPage } from './pages/GrantsListPage';
+import { GrantsPage } from './pages/GrantsPage';
 import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { RegisterPage } from './pages/RegisterPage';
@@ -18,7 +18,7 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route path="/" element={<HomePage />} />
-            <Route path="/grants" element={<GrantsListPage />} />
+            <Route path="/grants" element={<GrantsPage />} />
             <Route path="/grants/:slug" element={<GrantDetailPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
