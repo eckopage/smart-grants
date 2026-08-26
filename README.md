@@ -4,9 +4,9 @@ Platforma agregująca dotacje i kredyty unijne oraz krajowe dla polskich
 przedsiębiorców (MŚP). Model: subskrypcja dla przedsiębiorców + marketplace
 leadów dla firm doradczych.
 
-> **Status:** Faza 4 — płatności PayU + plany subskrypcji z konfigurowalnymi
-> limitami. Kolejne fazy (marketplace firm, workspace aplikacji, scraper,
-> SEO) będą dodawane etapami — patrz specyfikacja projektu.
+> **Status:** Faza 5 — marketplace firm doradczych. Kolejne fazy (workspace
+> aplikacji, scraper, SEO) będą dodawane etapami — patrz specyfikacja
+> projektu.
 
 ## Struktura repozytorium
 
@@ -106,6 +106,14 @@ serwisowym `mongo:7`.
 - `GET/POST/DELETE /users/me/favorites(/:grantId)` — ulubione dotacje;
   dodawanie wymaga aktywnej subskrypcji i respektuje limit `maxFavorites`
   planu użytkownika
+- `GET /companies`, `GET /companies/:id` — publiczny katalog firm doradczych
+  (filtrowanie: województwo, specjalizacja, nazwa), posortowany wg planu
+  (premium_leads > featured > basic_listing)
+- `POST /companies/me`, `GET/PATCH /companies/me/profile` — profil firmy dla
+  roli `company`
+- `PATCH /admin/companies/:id/verify` — weryfikacja firmy przez admina
+- `GET /grants/:slug/recommended-companies` — firmy dopasowane do dotacji wg
+  kategorii i województwa (widoczne w widoku szczegółowym dotacji)
 
 ### Dane przykładowe
 
