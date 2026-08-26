@@ -4,9 +4,9 @@ Platforma agregująca dotacje i kredyty unijne oraz krajowe dla polskich
 przedsiębiorców (MŚP). Model: subskrypcja dla przedsiębiorców + marketplace
 leadów dla firm doradczych.
 
-> **Status:** Faza 0 — szkielet monorepo. Kolejne fazy (Auth, model `Grant`,
-> mapa, płatności, marketplace firm, workspace aplikacji, scraper, SEO) będą
-> dodawane etapami — patrz specyfikacja projektu.
+> **Status:** Faza 1 — Auth (rejestracja/logowanie/JWT). Kolejne fazy (model
+> `Grant`, mapa, płatności, marketplace firm, workspace aplikacji, scraper,
+> SEO) będą dodawane etapami — patrz specyfikacja projektu.
 
 ## Struktura repozytorium
 
@@ -84,11 +84,14 @@ npm run test:e2e:api
 W CI (GitHub Actions) e2e uruchamiane są automatycznie z kontenerem
 serwisowym `mongo:7`.
 
-## Endpointy API (Faza 0)
+## Endpointy API
 
 - `GET /health` — liveness check
 - `GET /health/db` — sprawdzenie połączenia z MongoDB
 - `GET /api/docs` — dokumentacja Swagger/OpenAPI
+- `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`,
+  `POST /auth/logout`, `GET /auth/me` — rejestracja i logowanie (JWT access +
+  refresh token w httpOnly cookie, hasła hashowane argon2)
 
 ## Architektura pod przyszłe wymagania
 
