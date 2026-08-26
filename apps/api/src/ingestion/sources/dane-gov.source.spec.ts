@@ -50,10 +50,9 @@ describe('DaneGovSource', () => {
     });
   });
 
-  it('returns an empty array when the request fails', async () => {
+  it('propagates the error when the request fails, so the ingestion run records it', async () => {
     mockedAxios.get.mockRejectedValue(new Error('network error'));
     const source = buildSource('resource-1');
-    const grants = await source.fetchGrants();
-    expect(grants).toEqual([]);
+    await expect(source.fetchGrants()).rejects.toThrow('network error');
   });
 });

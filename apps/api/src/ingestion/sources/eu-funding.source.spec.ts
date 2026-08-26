@@ -46,11 +46,10 @@ describe('EuFundingSource', () => {
     expect(grants).toHaveLength(0);
   });
 
-  it('returns an empty array and does not throw when the request fails', async () => {
+  it('propagates the error when the request fails, so the ingestion run records it', async () => {
     mockedAxios.post.mockRejectedValue(new Error('network error'));
 
-    const grants = await source.fetchGrants();
-    expect(grants).toEqual([]);
+    await expect(source.fetchGrants()).rejects.toThrow('network error');
   });
 
   it('returns an empty array when the response shape is unexpected', async () => {

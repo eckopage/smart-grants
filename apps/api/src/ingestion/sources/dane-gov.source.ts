@@ -40,22 +40,19 @@ export class DaneGovSource implements GrantSource {
       return [];
     }
 
-    try {
-      const response = await axios.get<{ data?: DaneGovResourceRow[] }>(
-        `https://api.dane.gov.pl/1.4/resources/${resourceId}/data`,
-        { timeout: 15000 },
-      );
+    // Errors intentionally propagate rather than being swallowed here — the
+    // caller (IngestionService.syncAll) already isolates a failing source
+    // and records the real error message on the run, which surfaces it in
+    // the admin panel instead of only the server log.
+    const response = await axios.get<{ data?: DaneGovResourceRow[] }>(
+      `https://api.dane.gov.pl/1.4/resources/${resourceId}/data`,
+      { timeout: 15000 },
+    );
 
-      const rows = Array.isArray(response.data.data) ? response.data.data : [];
-      return rows
-        .map((row) => this.mapRow(row))
-        .filter((item): item is RawGrant => item !== null);
-    } catch (err) {
-      this.logger.error(
-        `Failed to fetch grants from ${this.name}: ${String(err)}`,
-      );
-      return [];
-    }
+    const rows = Array.isArray(response.data.data) ? response.data.data : [];
+    return rows
+      .map((row) => this.mapRow(row))
+      .filter((item): item is RawGrant => item !== null);
   }
 
   private mapRow(row: DaneGovResourceRow): RawGrant | null {
