@@ -17,6 +17,13 @@ import { ActiveSubscriptionGuard } from '../subscriptions/guards/active-subscrip
 import { UserRole } from '../users/schemas/user.schema';
 import { ApplicationsService } from './applications.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
+import { CreateMessageDto } from './dto/create-message.dto';
+import { RegisterDocumentDto } from './dto/register-document.dto';
+import { RequestUploadUrlDto } from './dto/request-upload-url.dto';
+import {
+  CreateTimelineItemDto,
+  UpdateTimelineItemDto,
+} from './dto/timeline-item.dto';
 
 @ApiTags('applications')
 @ApiBearerAuth()
@@ -71,5 +78,79 @@ export class ApplicationsController {
   @Patch(':id/withdraw')
   withdraw(@CurrentUser() user: AuthenticatedUser, @Param('id') id: string) {
     return this.applicationsService.withdraw(id, user.userId);
+  }
+
+  @Post(':id/documents/upload-url')
+  requestUploadUrl(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body() dto: RequestUploadUrlDto,
+  ) {
+    return this.applicationsService.requestDocumentUploadUrl(
+      id,
+      user.userId,
+      dto,
+    );
+  }
+
+  @Post(':id/documents')
+  registerDocument(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body() dto: RegisterDocumentDto,
+  ) {
+    return this.applicationsService.registerDocument(id, user.userId, dto);
+  }
+
+  @Get(':id/documents/:documentId/download-url')
+  getDocumentDownloadUrl(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Param('documentId') documentId: string,
+  ) {
+    return this.applicationsService
+      .getDocumentDownloadUrl(id, user.userId, documentId)
+      .then((url) => ({ url }));
+  }
+
+  @Post(':id/messages')
+  addMessage(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body() dto: CreateMessageDto,
+  ) {
+    return this.applicationsService.addMessage(id, user.userId, dto);
+  }
+
+  @Patch(':id/messages/read')
+  markMessagesRead(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+  ) {
+    return this.applicationsService.markMessagesRead(id, user.userId);
+  }
+
+  @Post(':id/timeline')
+  addTimelineItem(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Body() dto: CreateTimelineItemDto,
+  ) {
+    return this.applicationsService.addTimelineItem(id, user.userId, dto);
+  }
+
+  @Patch(':id/timeline/:itemId')
+  updateTimelineItem(
+    @CurrentUser() user: AuthenticatedUser,
+    @Param('id') id: string,
+    @Param('itemId') itemId: string,
+    @Body() dto: UpdateTimelineItemDto,
+  ) {
+    return this.applicationsService.updateTimelineItemStatus(
+      id,
+      user.userId,
+      itemId,
+      dto.status,
+    );
   }
 }

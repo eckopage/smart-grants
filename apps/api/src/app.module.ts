@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
+import { ScheduleModule } from '@nestjs/schedule';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ApplicationsModule } from './applications/applications.module';
@@ -12,6 +13,7 @@ import { HealthModule } from './health/health.module';
 import { MailModule } from './mail/mail.module';
 import { PaymentsModule } from './payments/payments.module';
 import { PlansModule } from './plans/plans.module';
+import { StorageModule } from './storage/storage.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { UsersModule } from './users/users.module';
 
@@ -22,8 +24,10 @@ import { UsersModule } from './users/users.module';
       validate: validateEnv,
       envFilePath: ['.env'],
     }),
+    ScheduleModule.forRoot(),
     DatabaseModule,
     MailModule,
+    StorageModule,
     HealthModule,
     UsersModule,
     AuthModule,

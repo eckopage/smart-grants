@@ -26,6 +26,8 @@ export enum TimelineItemStatus {
 
 @Schema({ _id: true, timestamps: false })
 export class TimelineItem {
+  _id?: Types.ObjectId;
+
   @Prop({ required: true })
   title: string;
 
@@ -52,11 +54,14 @@ const TimelineItemSchema = SchemaFactory.createForClass(TimelineItem);
 
 @Schema({ _id: true, timestamps: false })
 export class ApplicationDocumentItem {
+  _id?: Types.ObjectId;
+
   @Prop({ required: true })
   fileName: string;
 
+  /** Object key in the storage bucket — never a public URL. */
   @Prop({ required: true })
-  fileUrl: string;
+  fileKey: string;
 
   @Prop({ required: true })
   category: string;

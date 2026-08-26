@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
+import { ApplicationWorkspacePage } from './pages/ApplicationWorkspacePage';
 import { DashboardPage } from './pages/DashboardPage';
 import { GrantDetailPage } from './pages/GrantDetailPage';
 import { GrantsPage } from './pages/GrantsPage';
@@ -29,6 +30,14 @@ function App() {
               element={
                 <ProtectedRoute>
                   <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/applications/:id"
+              element={
+                <ProtectedRoute>
+                  <ApplicationWorkspacePage />
                 </ProtectedRoute>
               }
             />

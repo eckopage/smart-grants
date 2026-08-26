@@ -72,6 +72,12 @@ export function DashboardPage() {
                 <p className="text-sm text-slate-500">
                   Status: {STATUS_LABELS[application.status] ?? application.status}
                 </p>
+                <Link
+                  to={`/applications/${application._id}`}
+                  className="text-sm text-slate-900 underline"
+                >
+                  Otwórz workspace →
+                </Link>
               </div>
             );
           })}

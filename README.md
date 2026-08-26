@@ -4,10 +4,9 @@ Platforma agregująca dotacje i kredyty unijne oraz krajowe dla polskich
 przedsiębiorców (MŚP). Model: subskrypcja dla przedsiębiorców + marketplace
 leadów dla firm doradczych.
 
-> **Status:** Faza 6 — przycisk „Chcę aplikować” + podstawowy model
-> `Application` (status, dopasowanie firmy) + powiadomienia e-mail. Kolejne
-> fazy (pełny workspace aplikacji, scraper, SEO) będą dodawane etapami —
-> patrz specyfikacja projektu.
+> **Status:** Faza 7 — pełny workspace aplikacji (dokumenty przez Cloudflare
+> R2, wiadomości, edytowalna oś czasu, powiadomienia o terminach). Kolejne
+> fazy (scraper, SEO) będą dodawane etapami — patrz specyfikacja projektu.
 
 ## Struktura repozytorium
 
@@ -126,6 +125,20 @@ serwisowym `mongo:7`.
   zgłoszenie
 - `GET /applications/:id` — szczegóły (dostęp: właściciel zgłoszenia lub
   przypisana firma)
+- `POST /applications/:id/documents/upload-url` — zwraca podpisany URL do
+  przesłania pliku bezpośrednio do Cloudflare R2 (PUT), bez przechodzenia
+  przez API; `POST /applications/:id/documents` — rejestruje metadane
+  dokumentu (wersjonowanie po nazwie+kategorii); `GET
+  /applications/:id/documents/:documentId/download-url` — podpisany URL do
+  pobrania (5 min ważności) — pliki nigdy nie są publicznie dostępne
+- `POST /applications/:id/messages` — wątek wiadomości klient↔doradca (z
+  powiadomieniem e-mail do drugiej strony); `PATCH
+  /applications/:id/messages/read` — oznacza wiadomości jako przeczytane
+- `POST /applications/:id/timeline` — dodaje pozycję osi czasu (termin,
+  przypisanie, opis); `PATCH /applications/:id/timeline/:itemId` — zmienia
+  status (pending/done/overdue)
+- Codzienne przypomnienia e-mail o zbliżających się terminach z osi czasu
+  (`DeadlineReminderScheduler`, `@nestjs/schedule`, 2 dni przed terminem)
 
 ### Dane przykładowe
 
@@ -160,10 +173,12 @@ prawdziwe dane testowe z panelu PayU (`PAYU_CLIENT_ID`, `PAYU_CLIENT_SECRET`,
   biznesowej (`GrantsPage`).
 - **Integracje infrastrukturalne** za interfejsami adapterów:
   `MailProvider` (`apps/api/src/mail`) — domyślnie `ConsoleMailProvider`
-  (loguje zamiast wysyłać), docelowo Resend/Brevo bez zmian w logice
-  biznesowej. `StorageProvider`/`QueueProvider` (Cloudflare R2, Upstash)
-  dołączą w Fazie 7/8, z myślą o migracji na AWS (S3, SQS) w przyszłości
-  przez wymianę jednej implementacji.
+  (loguje zamiast wysyłać), docelowo Resend/Brevo. `StorageProvider`
+  (`apps/api/src/storage`) — domyślnie `R2StorageProvider` (Cloudflare R2,
+  S3-compatible, presigned URLs do uploadu/downloadu). `QueueProvider`
+  (Upstash) dołączy w Fazie 8. Migracja na AWS (S3, SES, SQS) w przyszłości
+  = wymiana jednej implementacji za każdym interfejsem, bez zmian w logice
+  biznesowej.
 - **Ceny i limity planów subskrypcji** będą konfigurowalne w bazie danych /
   panelu admina, a nie zahardkodowane — dodane w Fazie 4.
 

@@ -66,6 +66,22 @@ class EnvironmentVariables {
   @IsString()
   @IsOptional()
   PAYU_SECOND_KEY?: string;
+
+  @IsString()
+  @IsOptional()
+  R2_ACCOUNT_ID?: string;
+
+  @IsString()
+  @IsOptional()
+  R2_ACCESS_KEY_ID?: string;
+
+  @IsString()
+  @IsOptional()
+  R2_SECRET_ACCESS_KEY?: string;
+
+  @IsString()
+  @IsOptional()
+  R2_BUCKET: string = 'smart-grants';
 }
 
 export function validateEnv(config: Record<string, unknown>) {
