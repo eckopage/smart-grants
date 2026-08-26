@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, QueryFilter } from 'mongoose';
+import { GrantSource, GrantType } from './constants';
 import { CreateGrantDto } from './dto/create-grant.dto';
 import { QueryGrantsDto } from './dto/query-grants.dto';
 import { UpdateGrantDto } from './dto/update-grant.dto';
@@ -12,6 +13,37 @@ export interface PaginatedResult<T> {
   total: number;
   page: number;
   limit: number;
+}
+
+/** Normalized shape produced by ingestion adapters, keyed by (sourceSystem, externalId). */
+export interface UpsertExternalGrantInput {
+  sourceSystem: string;
+  externalId: string;
+  title: string;
+  description: string;
+  shortSummary?: string;
+  type: GrantType;
+  source: GrantSource;
+  programme: string;
+  institution: string;
+  voivodeships?: string[];
+  category?: string[];
+  tags?: string[];
+  fundingRange?: { min: number; max: number };
+  eligibleCosts?: string[];
+  sourceUrl?: string;
+  timeline?: {
+    announcedAt?: Date;
+    submissionOpensAt?: Date;
+    submissionClosesAt?: Date;
+    resultsAt?: Date;
+  };
+}
+
+export interface UpsertResult {
+  grant: GrantDocument;
+  wasCreated: boolean;
+  wasUpdated: boolean;
 }
 
 @Injectable()
@@ -124,6 +156,47 @@ export class GrantsService {
     if (!result) {
       throw new NotFoundException('Nie znaleziono dotacji');
     }
+  }
+
+  async upsertFromExternalSource(
+    input: UpsertExternalGrantInput,
+  ): Promise<UpsertResult> {
+    const existing = await this.grantModel
+      .findOne({
+        sourceSystem: input.sourceSystem,
+        externalId: input.externalId,
+      })
+      .exec();
+
+    if (!existing) {
+      const slug = await this.generateUniqueSlug(input.title);
+      const grant = await new this.grantModel({
+        ...input,
+        slug,
+        lastScrapedAt: new Date(),
+      }).save();
+      return { grant, wasCreated: true, wasUpdated: false };
+    }
+
+    const changed =
+      existing.title !== input.title ||
+      existing.description !== input.description ||
+      existing.timeline?.submissionClosesAt?.toISOString() !==
+        input.timeline?.submissionClosesAt?.toISOString();
+
+    if (changed) {
+      existing.title = input.title;
+      existing.description = input.description;
+      existing.shortSummary = input.shortSummary;
+      existing.fundingRange = input.fundingRange;
+      existing.sourceUrl = input.sourceUrl;
+      if (input.timeline) {
+        Object.assign(existing.timeline, input.timeline);
+      }
+    }
+    existing.lastScrapedAt = new Date();
+    await existing.save();
+    return { grant: existing, wasCreated: false, wasUpdated: changed };
   }
 
   private async generateUniqueSlug(title: string): Promise<string> {

@@ -112,6 +112,10 @@ export class Grant {
   @Prop()
   sourceSystem?: string;
 
+  /** Stable identifier from the source system, used for dedup/diffing by scrapers. */
+  @Prop()
+  externalId?: string;
+
   @Prop()
   lastScrapedAt?: Date;
 
@@ -124,3 +128,7 @@ export class Grant {
 
 export const GrantSchema = SchemaFactory.createForClass(Grant);
 GrantSchema.index({ title: 'text', description: 'text' });
+GrantSchema.index(
+  { sourceSystem: 1, externalId: 1 },
+  { unique: true, sparse: true },
+);

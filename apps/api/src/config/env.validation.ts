@@ -82,6 +82,10 @@ class EnvironmentVariables {
   @IsString()
   @IsOptional()
   R2_BUCKET: string = 'smart-grants';
+
+  @IsString()
+  @IsOptional()
+  DANE_GOV_PL_RESOURCE_ID?: string;
 }
 
 export function validateEnv(config: Record<string, unknown>) {

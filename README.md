@@ -4,9 +4,9 @@ Platforma agregująca dotacje i kredyty unijne oraz krajowe dla polskich
 przedsiębiorców (MŚP). Model: subskrypcja dla przedsiębiorców + marketplace
 leadów dla firm doradczych.
 
-> **Status:** Faza 7 — pełny workspace aplikacji (dokumenty przez Cloudflare
-> R2, wiadomości, edytowalna oś czasu, powiadomienia o terminach). Kolejne
-> fazy (scraper, SEO) będą dodawane etapami — patrz specyfikacja projektu.
+> **Status:** Faza 8 — moduł ingestion/scraper (EU Funding & Tenders Portal,
+> dane.gov.pl) z kolejkowaniem BullMQ + harmonogramem. Ostatnia faza (SEO/UX)
+> zostanie dodana jako kolejny krok — patrz specyfikacja projektu.
 
 ## Struktura repozytorium
 
@@ -81,8 +81,44 @@ docker compose up -d mongo
 npm run test:e2e:api
 ```
 
-W CI (GitHub Actions) e2e uruchamiane są automatycznie z kontenerem
-serwisowym `mongo:7`.
+W CI (GitHub Actions) e2e uruchamiane są automatycznie z kontenerami
+serwisowymi `mongo:7` i `redis:7-alpine` (od Fazy 8 API wymaga Redis do
+uruchomienia — kolejki BullMQ).
+
+## Moduł ingestion (scraper)
+
+Adaptery źródeł danych implementują wspólny interfejs `GrantSource`
+(`apps/api/src/ingestion/grant-source.interface.ts`) i są uruchamiane przez
+`IngestionService` w zadaniu BullMQ (kolejka `ingestion`, harmonogram co 6h
+przez `@nestjs/schedule`), każdy z osobną obsługą błędów, żeby awaria
+jednego źródła nie przerywała synchronizacji pozostałych.
+
+Zaimplementowane adaptery (w kolejności priorytetowej ze specyfikacji):
+
+1. **EU Funding & Tenders Portal** (`eu-funding.source.ts`) — publiczne API
+   wyszukiwania SEDIA. Dokładny kształt zapytania/odpowiedzi nie był
+   możliwy do zweryfikowania na żywo z tego środowiska (brak dostępu
+   wychodzącego do tego hosta w trakcie developmentu) — adapter jest
+   napisany defensywnie (błędny kształt odpowiedzi = zalogowany błąd i
+   pusty wynik dla tego przebiegu, a nie wyjątek), ale mapowanie pól w
+   `mapResult()` warto zweryfikować względem aktualnej dokumentacji portalu
+   przed użyciem produkcyjnym.
+2. **dane.gov.pl** (`dane-gov.source.ts`) — oficjalne REST API
+   (`api.dane.gov.pl`, format JSON:API). Ponieważ dane.gov.pl to katalog
+   otwartych danych, a nie baza dotacji, adapter celowo nie zgaduje, który
+   zbiór danych zawiera nabory — działa jako udokumentowany no-op, dopóki
+   nie skonfigurujesz `DANE_GOV_PL_RESOURCE_ID` wskazującego na konkretny
+   zasób (np. publikowany przez ministerstwo wykaz naborów), po czym
+   mapowanie kolumn w `mapRow()` należy dopasować do tego zasobu.
+3. Portale RPO (16 województw) i `funduszeeuropejskie.gov.pl` (wymaga
+   Playwright i ostrożnej weryfikacji regulaminu/robots.txt) — zaplanowane,
+   nie zaimplementowane w tej fazie.
+
+Deduplikacja/diffing: `GrantsService.upsertFromExternalSource()` dopasowuje
+rekordy po parze `(sourceSystem, externalId)` (unikalny indeks), aktualizuje
+istniejące dotacje tylko przy realnej zmianie (tytuł/opis/termin), zamiast
+nadpisywać ślepo. Historia przebiegów (`IngestionRun`) jest dostępna przez
+`GET /admin/ingestion/runs`.
 
 ## Endpointy API
 
@@ -139,6 +175,9 @@ serwisowym `mongo:7`.
   status (pending/done/overdue)
 - Codzienne przypomnienia e-mail o zbliżających się terminach z osi czasu
   (`DeadlineReminderScheduler`, `@nestjs/schedule`, 2 dni przed terminem)
+- `GET /admin/ingestion/runs` — historia uruchomień scrapera (per źródło:
+  liczba znalezionych/utworzonych/zaktualizowanych dotacji, błędy);
+  `POST /admin/ingestion/run` — ręczne wymuszenie synchronizacji
 
 ### Dane przykładowe
 
@@ -175,10 +214,11 @@ prawdziwe dane testowe z panelu PayU (`PAYU_CLIENT_ID`, `PAYU_CLIENT_SECRET`,
   `MailProvider` (`apps/api/src/mail`) — domyślnie `ConsoleMailProvider`
   (loguje zamiast wysyłać), docelowo Resend/Brevo. `StorageProvider`
   (`apps/api/src/storage`) — domyślnie `R2StorageProvider` (Cloudflare R2,
-  S3-compatible, presigned URLs do uploadu/downloadu). `QueueProvider`
-  (Upstash) dołączy w Fazie 8. Migracja na AWS (S3, SES, SQS) w przyszłości
-  = wymiana jednej implementacji za każdym interfejsem, bez zmian w logice
-  biznesowej.
+  S3-compatible, presigned URLs do uploadu/downloadu). Kolejki: BullMQ na
+  Redis (lokalnie: docker-compose; docelowo: Upstash Redis — kompatybilny,
+  wystarczy podmienić `REDIS_URL`). Migracja na AWS (S3, SES, SQS) w
+  przyszłości = wymiana jednej implementacji za każdym interfejsem, bez
+  zmian w logice biznesowej.
 - **Ceny i limity planów subskrypcji** będą konfigurowalne w bazie danych /
   panelu admina, a nie zahardkodowane — dodane w Fazie 4.
 

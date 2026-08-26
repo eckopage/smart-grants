@@ -15,8 +15,13 @@ jobs:
         image: mongo:7
         ports:
           - 27017:27017
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
     env:
       MONGODB_URI: mongodb://localhost:27017/smart-grants-test
+      REDIS_URL: redis://localhost:6379
       JWT_ACCESS_SECRET: ci-access-secret
       JWT_REFRESH_SECRET: ci-refresh-secret
     steps:
