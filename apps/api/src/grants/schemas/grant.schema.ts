@@ -130,5 +130,12 @@ export const GrantSchema = SchemaFactory.createForClass(Grant);
 GrantSchema.index({ title: 'text', description: 'text' });
 GrantSchema.index(
   { sourceSystem: 1, externalId: 1 },
-  { unique: true, sparse: true },
+  {
+    unique: true,
+    // Only records that actually have an externalId (scraped grants) are
+    // subject to the uniqueness constraint. `sparse` alone doesn't work here:
+    // for a compound index it excludes a document only if ALL indexed fields
+    // are missing, and manually-seeded grants always set `sourceSystem`.
+    partialFilterExpression: { externalId: { $exists: true } },
+  },
 );
