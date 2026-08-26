@@ -14,12 +14,21 @@ export function Navbar() {
           <Link to="/grants" className="hover:text-slate-900">
             Dotacje
           </Link>
+          <Link to="/companies" className="hover:text-slate-900">
+            Firmy
+          </Link>
           <Link to="/pricing" className="hover:text-slate-900">
             Cennik
           </Link>
           {user ? (
             <Link
-              to={user.role === 'admin' ? '/admin' : '/dashboard'}
+              to={
+                user.role === 'admin'
+                  ? '/admin'
+                  : user.role === 'company'
+                    ? '/company/dashboard'
+                    : '/dashboard'
+              }
               className="hover:text-slate-900"
             >
               {user.role === 'admin' ? 'Panel admina' : 'Panel'}

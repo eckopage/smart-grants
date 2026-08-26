@@ -31,8 +31,8 @@ export function RegisterPage() {
   async function onSubmit(values: FormValues) {
     setServerError(null);
     try {
-      await registerUser(values);
-      void navigate('/dashboard');
+      const user = await registerUser(values);
+      void navigate(user.role === 'company' ? '/company/onboarding' : '/dashboard');
     } catch (err) {
       setServerError(err instanceof ApiError ? err.message : 'Wystąpił błąd');
     }

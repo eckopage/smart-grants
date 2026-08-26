@@ -27,8 +27,14 @@ export function LoginPage() {
   async function onSubmit(values: FormValues) {
     setServerError(null);
     try {
-      await login(values);
-      void navigate('/dashboard');
+      const user = await login(values);
+      if (user.role === 'admin') {
+        void navigate('/admin');
+      } else if (user.role === 'company') {
+        void navigate('/company/dashboard');
+      } else {
+        void navigate('/dashboard');
+      }
     } catch (err) {
       setServerError(err instanceof ApiError ? err.message : 'Wystąpił błąd');
     }

@@ -21,6 +21,10 @@ import { AdminIngestionPage } from './pages/admin/AdminIngestionPage';
 import { AdminPlansPage } from './pages/admin/AdminPlansPage';
 import { AdminSubscriptionsPage } from './pages/admin/AdminSubscriptionsPage';
 import { AdminUsersPage } from './pages/admin/AdminUsersPage';
+import { CompaniesDirectoryPage } from './pages/CompaniesDirectoryPage';
+import { CompanyDetailPage } from './pages/CompanyDetailPage';
+import { CompanyDashboardPage } from './pages/CompanyDashboardPage';
+import { CreateCompanyProfilePage } from './pages/CreateCompanyProfilePage';
 
 const queryClient = new QueryClient();
 
@@ -52,6 +56,24 @@ function App() {
             <Route path="/pricing" element={<PricingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/companies" element={<CompaniesDirectoryPage />} />
+            <Route path="/companies/:id" element={<CompanyDetailPage />} />
+            <Route
+              path="/company/onboarding"
+              element={
+                <ProtectedRoute role="company">
+                  <CreateCompanyProfilePage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/company/dashboard"
+              element={
+                <ProtectedRoute role="company">
+                  <CompanyDashboardPage />
+                </ProtectedRoute>
+              }
+            />
             <Route
               path="/dashboard"
               element={

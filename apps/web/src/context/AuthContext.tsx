@@ -18,8 +18,8 @@ interface AuthContextValue {
     email: string;
     password: string;
     role?: 'entrepreneur' | 'company';
-  }) => Promise<void>;
-  login: (input: { email: string; password: string }) => Promise<void>;
+  }) => Promise<PublicUser>;
+  login: (input: { email: string; password: string }) => Promise<PublicUser>;
   logout: () => Promise<void>;
 }
 
@@ -69,6 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     setUser(result.user);
     setAccessToken(result.accessToken);
+    return result.user;
   }, []);
 
   const login = useCallback<AuthContextValue['login']>(async (input) => {
@@ -78,6 +79,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     setUser(result.user);
     setAccessToken(result.accessToken);
+    return result.user;
   }, []);
 
   const logout = useCallback(async () => {
