@@ -1,5 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
-import { Link, useParams } from 'react-router-dom';
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { ApiError } from '../lib/api-client';
+import { createApplication, fetchRecommendedCompanies } from '../lib/applications-client';
 import { fetchGrantBySlug } from '../lib/grants-client';
 
 function formatDate(value?: string): string {
@@ -12,6 +16,11 @@ function formatAmount(value: number): string {
 
 export function GrantDetailPage() {
   const { slug } = useParams<{ slug: string }>();
+  const { user, accessToken } = useAuth();
+  const navigate = useNavigate();
+  const [applyError, setApplyError] = useState<string | null>(null);
+  const [applySuccess, setApplySuccess] = useState(false);
+
   const {
     data: grant,
     isLoading,
@@ -21,6 +30,28 @@ export function GrantDetailPage() {
     queryFn: () => fetchGrantBySlug(slug!),
     enabled: !!slug,
   });
+
+  const { data: recommendedCompanies } = useQuery({
+    queryKey: ['recommended-companies', slug],
+    queryFn: () => fetchRecommendedCompanies(slug!),
+    enabled: !!slug,
+  });
+
+  const applyMutation = useMutation({
+    mutationFn: () => createApplication(grant!._id, accessToken!),
+    onSuccess: () => setApplySuccess(true),
+    onError: (err) =>
+      setApplyError(err instanceof ApiError ? err.message : 'Wystąpił błąd'),
+  });
+
+  function handleApply() {
+    setApplyError(null);
+    if (!user || !accessToken) {
+      void navigate('/login');
+      return;
+    }
+    applyMutation.mutate();
+  }
 
   if (isLoading) {
     return <p className="p-10 text-slate-500">Ładowanie…</p>;
@@ -133,10 +164,52 @@ export function GrantDetailPage() {
           href={grant.sourceUrl}
           target="_blank"
           rel="noreferrer"
-          className="mt-8 inline-block text-sm text-slate-900 underline"
+          className="mt-8 block text-sm text-slate-900 underline"
         >
           Źródło informacji →
         </a>
+      )}
+
+      <section className="mt-8 rounded-lg border border-slate-200 p-4">
+        {applySuccess ? (
+          <p className="text-emerald-600">
+            Zgłoszenie zostało przyjęte. Sprawdź panel „Moje aplikacje”.
+          </p>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={handleApply}
+              disabled={applyMutation.isPending}
+              className="rounded bg-slate-900 px-4 py-2 text-white disabled:opacity-50"
+            >
+              {applyMutation.isPending ? 'Wysyłanie…' : 'Chcę aplikować'}
+            </button>
+            {applyError && <p className="mt-2 text-sm text-red-600">{applyError}</p>}
+          </>
+        )}
+      </section>
+
+      {recommendedCompanies && recommendedCompanies.length > 0 && (
+        <section className="mt-8">
+          <h2 className="mb-3 font-semibold text-slate-900">
+            Polecane firmy doradcze
+          </h2>
+          <div className="flex flex-col gap-2">
+            {recommendedCompanies.map((company) => (
+              <div
+                key={company._id}
+                className="rounded border border-slate-200 p-3 text-sm"
+              >
+                <p className="font-medium text-slate-900">{company.name}</p>
+                {company.description && (
+                  <p className="text-slate-600">{company.description}</p>
+                )}
+                <p className="text-slate-500">{company.contactEmail}</p>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
     </main>
   );

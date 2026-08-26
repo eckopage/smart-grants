@@ -4,9 +4,10 @@ Platforma agregująca dotacje i kredyty unijne oraz krajowe dla polskich
 przedsiębiorców (MŚP). Model: subskrypcja dla przedsiębiorców + marketplace
 leadów dla firm doradczych.
 
-> **Status:** Faza 5 — marketplace firm doradczych. Kolejne fazy (workspace
-> aplikacji, scraper, SEO) będą dodawane etapami — patrz specyfikacja
-> projektu.
+> **Status:** Faza 6 — przycisk „Chcę aplikować” + podstawowy model
+> `Application` (status, dopasowanie firmy) + powiadomienia e-mail. Kolejne
+> fazy (pełny workspace aplikacji, scraper, SEO) będą dodawane etapami —
+> patrz specyfikacja projektu.
 
 ## Struktura repozytorium
 
@@ -114,6 +115,17 @@ serwisowym `mongo:7`.
 - `PATCH /admin/companies/:id/verify` — weryfikacja firmy przez admina
 - `GET /grants/:slug/recommended-companies` — firmy dopasowane do dotacji wg
   kategorii i województwa (widoczne w widoku szczegółowym dotacji)
+- `POST /applications` — „Chcę aplikować” (tworzy zgłoszenie w statusie
+  `intent`, wymaga aktywnej subskrypcji), wysyła e-mail potwierdzający do
+  użytkownika i powiadomienia do dopasowanych firm doradczych
+- `GET /applications/me` — zgłoszenia zalogowanego przedsiębiorcy
+- `GET /applications/company/matched` — zgłoszenia pasujące do specjalizacji
+  firmy (rola `company`), jeszcze nie podjęte
+- `PATCH /applications/:id/take` — firma podejmuje zgłoszenie (status →
+  `matched`); `PATCH /applications/:id/withdraw` — użytkownik wycofuje
+  zgłoszenie
+- `GET /applications/:id` — szczegóły (dostęp: właściciel zgłoszenia lub
+  przypisana firma)
 
 ### Dane przykładowe
 
@@ -146,11 +158,12 @@ prawdziwe dane testowe z panelu PayU (`PAYU_CLIENT_ID`, `PAYU_CLIENT_SECRET`,
   Maps/Mapbox w przyszłości = nowa implementacja `MapProviderComponent` +
   zmiana jednego eksportu w `lib/map/index.ts`, bez zmian w logice
   biznesowej (`GrantsPage`).
-- **Integracje infrastrukturalne** (storage plików, e-mail, kolejki) będą
-  budowane za interfejsami (`StorageProvider`, `MailProvider`,
-  `QueueProvider`), żeby przejście z tanich usług startowych (Cloudflare R2,
-  Resend/Brevo, Upstash) na AWS (S3, SES, SQS) w przyszłości było wymianą
-  jednej implementacji.
+- **Integracje infrastrukturalne** za interfejsami adapterów:
+  `MailProvider` (`apps/api/src/mail`) — domyślnie `ConsoleMailProvider`
+  (loguje zamiast wysyłać), docelowo Resend/Brevo bez zmian w logice
+  biznesowej. `StorageProvider`/`QueueProvider` (Cloudflare R2, Upstash)
+  dołączą w Fazie 7/8, z myślą o migracji na AWS (S3, SQS) w przyszłości
+  przez wymianę jednej implementacji.
 - **Ceny i limity planów subskrypcji** będą konfigurowalne w bazie danych /
   panelu admina, a nie zahardkodowane — dodane w Fazie 4.
 
