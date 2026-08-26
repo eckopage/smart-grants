@@ -2,6 +2,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 import { ApiError } from '../lib/api-client';
 import { createApplication, fetchRecommendedCompanies } from '../lib/applications-client';
 import { fetchGrantBySlug } from '../lib/grants-client';
@@ -36,6 +37,11 @@ export function GrantDetailPage() {
     queryFn: () => fetchRecommendedCompanies(slug!),
     enabled: !!slug,
   });
+
+  useDocumentMeta(
+    grant ? `${grant.title} | Smart Grants` : 'Smart Grants',
+    grant?.shortSummary ?? grant?.description,
+  );
 
   const applyMutation = useMutation({
     mutationFn: () => createApplication(grant!._id, accessToken!),

@@ -1,8 +1,14 @@
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 import { fetchHealth } from '../lib/api-client';
 
 export function HomePage() {
+  useDocumentMeta(
+    'Smart Grants — dotacje i kredyty UE dla przedsiębiorców',
+    'Agregator dotacji unijnych, krajowych i kredytów preferencyjnych dla polskich mikro, małych i średnich firm.',
+  );
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ['health'],
     queryFn: fetchHealth,

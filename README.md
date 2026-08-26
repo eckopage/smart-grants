@@ -4,9 +4,11 @@ Platforma agregująca dotacje i kredyty unijne oraz krajowe dla polskich
 przedsiębiorców (MŚP). Model: subskrypcja dla przedsiębiorców + marketplace
 leadów dla firm doradczych.
 
-> **Status:** Faza 8 — moduł ingestion/scraper (EU Funding & Tenders Portal,
-> dane.gov.pl) z kolejkowaniem BullMQ + harmonogramem. Ostatnia faza (SEO/UX)
-> zostanie dodana jako kolejny krok — patrz specyfikacja projektu.
+> **Status:** Faza 9 (ostatnia) — dopracowanie UX (wspólny navbar), SEO
+> (dynamiczne tytuły/opisy stron, sitemap.xml, robots.txt) i integracja GA4.
+> Wszystkie fazy ze specyfikacji projektu są zaimplementowane; dalszy rozwój
+> (realne dane testowe PayU/R2, dodatkowe adaptery scrapera, SSR) to naturalne
+> kolejne kroki opisane w odpowiednich sekcjach poniżej.
 
 ## Struktura repozytorium
 
@@ -119,6 +121,25 @@ rekordy po parze `(sourceSystem, externalId)` (unikalny indeks), aktualizuje
 istniejące dotacje tylko przy realnej zmianie (tytuł/opis/termin), zamiast
 nadpisywać ślepo. Historia przebiegów (`IngestionRun`) jest dostępna przez
 `GET /admin/ingestion/runs`.
+
+## SEO, UX i analityka
+
+- Wspólny navbar (`Navbar.tsx`) z linkami zależnymi od stanu logowania,
+  widoczny na wszystkich stronach.
+- Dynamiczny `<title>` i meta description per strona (`useDocumentMeta`) —
+  **to rozwiązanie działa tylko po stronie klienta**: aplikacja to SPA
+  (Vite + React Router), więc crawlery, które nie wykonują JS (lub robią to
+  zanim treść się zamontuje), tego nie zobaczą. Prawdziwe SEO dla
+  publicznego katalogu ofert (`/grants/:slug`) wymagałoby SSR/prerenderingu
+  — np. migracji na Next.js/Remix albo osobnego kroku prerenderującego —
+  co jest świadomie poza zakresem tego etapu.
+- `GET /sitemap.xml` (API) — generowany dynamicznie z aktualnych dotacji;
+  w produkcji podepnij go pod domenę główną (np. regułą/workerem
+  Cloudflare), żeby crawlery widziały go pod `/sitemap.xml` strony, a nie
+  subdomeny API. `apps/web/public/robots.txt` wskazuje na tę ścieżkę.
+- Google Analytics 4: `VITE_GA4_MEASUREMENT_ID` — nieustawiony = brak
+  jakiegokolwiek trackingu (bezpieczny domyślny stan); ustawiony = ładuje
+  gtag.js i wysyła `page_view` przy każdej zmianie trasy.
 
 ## Endpointy API
 

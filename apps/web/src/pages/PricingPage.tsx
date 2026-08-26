@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 import { ApiError } from '../lib/api-client';
 import { checkout } from '../lib/payments-client';
 import { fetchPlans } from '../lib/plans-client';
@@ -11,6 +12,10 @@ function formatPrice(value: number): string {
 }
 
 export function PricingPage() {
+  useDocumentMeta(
+    'Cennik | Smart Grants',
+    'Wybierz plan Starter, Pro lub Business i uzyskaj pełny dostęp do bazy dotacji i kredytów dla przedsiębiorców.',
+  );
   const { user, accessToken } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);

@@ -15,6 +15,7 @@ import { IngestionModule } from './ingestion/ingestion.module';
 import { MailModule } from './mail/mail.module';
 import { PaymentsModule } from './payments/payments.module';
 import { PlansModule } from './plans/plans.module';
+import { SeoModule } from './seo/seo.module';
 import { StorageModule } from './storage/storage.module';
 import { SubscriptionsModule } from './subscriptions/subscriptions.module';
 import { UsersModule } from './users/users.module';
@@ -55,6 +56,7 @@ import { UsersModule } from './users/users.module';
     PaymentsModule,
     ApplicationsModule,
     IngestionModule,
+    SeoModule,
   ],
   controllers: [AppController],
   providers: [AppService],

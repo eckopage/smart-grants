@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { GrantCard } from '../components/GrantCard';
+import { useDocumentMeta } from '../hooks/useDocumentMeta';
 import { ActiveMapProvider, type RegionHighlight } from '../lib/map';
 import { fetchGrants } from '../lib/grants-client';
 import { GRANT_CATEGORIES, VOIVODESHIPS, type Grant } from '../types/grant';
@@ -9,6 +10,10 @@ import { GRANT_CATEGORIES, VOIVODESHIPS, type Grant } from '../types/grant';
 type ViewMode = 'list' | 'map';
 
 export function GrantsPage() {
+  useDocumentMeta(
+    'Dotacje i kredyty — mapa i lista naborów | Smart Grants',
+    'Przeglądaj aktualne dotacje unijne, krajowe i kredyty preferencyjne na mapie Polski lub liście, z filtrowaniem wg województwa i kategorii.',
+  );
   const navigate = useNavigate();
   const [view, setView] = useState<ViewMode>('map');
   const [search, setSearch] = useState('');
@@ -60,7 +65,7 @@ export function GrantsPage() {
   }, [data]);
 
   return (
-    <main className="mx-auto flex h-screen max-w-6xl flex-col px-6 py-6">
+    <main className="mx-auto flex h-[calc(100vh-57px)] max-w-6xl flex-col px-6 py-6">
       <div className="mb-4 flex items-center justify-between">
         <h1 className="text-2xl font-semibold text-slate-900">
           Dotacje i kredyty

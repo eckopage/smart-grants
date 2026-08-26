@@ -1,7 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { useEffect } from 'react';
+import { BrowserRouter, Route, Routes, useLocation } from 'react-router-dom';
+import { Navbar } from './components/Navbar';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { AuthProvider } from './context/AuthContext';
+import { initAnalytics, trackPageView } from './lib/analytics';
 import { ApplicationWorkspacePage } from './pages/ApplicationWorkspacePage';
 import { DashboardPage } from './pages/DashboardPage';
 import { GrantDetailPage } from './pages/GrantDetailPage';
@@ -13,11 +16,27 @@ import { RegisterPage } from './pages/RegisterPage';
 
 const queryClient = new QueryClient();
 
+function AnalyticsTracker() {
+  const location = useLocation();
+
+  useEffect(() => {
+    initAnalytics();
+  }, []);
+
+  useEffect(() => {
+    trackPageView(location.pathname);
+  }, [location.pathname]);
+
+  return null;
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
         <BrowserRouter>
+          <AnalyticsTracker />
+          <Navbar />
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/grants" element={<GrantsPage />} />
