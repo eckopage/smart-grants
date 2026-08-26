@@ -20,6 +20,14 @@ export class UsersService {
     return this.userModel.findById(id).exec();
   }
 
+  findAll(): Promise<UserDocument[]> {
+    return this.userModel
+      .find()
+      .select('-passwordHash -hashedRefreshToken')
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
   create(
     dto: Omit<CreateUserDto, 'password'> & { passwordHash: string },
   ): Promise<UserDocument> {

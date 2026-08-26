@@ -18,8 +18,11 @@ export function Navbar() {
             Cennik
           </Link>
           {user ? (
-            <Link to="/dashboard" className="hover:text-slate-900">
-              Panel
+            <Link
+              to={user.role === 'admin' ? '/admin' : '/dashboard'}
+              className="hover:text-slate-900"
+            >
+              {user.role === 'admin' ? 'Panel admina' : 'Panel'}
             </Link>
           ) : (
             <>

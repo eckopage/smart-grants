@@ -13,6 +13,14 @@ import { HomePage } from './pages/HomePage';
 import { LoginPage } from './pages/LoginPage';
 import { PricingPage } from './pages/PricingPage';
 import { RegisterPage } from './pages/RegisterPage';
+import { AdminLayout } from './layouts/AdminLayout';
+import { AdminCompaniesPage } from './pages/admin/AdminCompaniesPage';
+import { AdminGrantFormPage } from './pages/admin/AdminGrantFormPage';
+import { AdminGrantsPage } from './pages/admin/AdminGrantsPage';
+import { AdminIngestionPage } from './pages/admin/AdminIngestionPage';
+import { AdminPlansPage } from './pages/admin/AdminPlansPage';
+import { AdminSubscriptionsPage } from './pages/admin/AdminSubscriptionsPage';
+import { AdminUsersPage } from './pages/admin/AdminUsersPage';
 
 const queryClient = new QueryClient();
 
@@ -60,6 +68,24 @@ function App() {
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/admin"
+              element={
+                <ProtectedRoute role="admin">
+                  <AdminLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<AdminGrantsPage />} />
+              <Route path="grants" element={<AdminGrantsPage />} />
+              <Route path="grants/new" element={<AdminGrantFormPage />} />
+              <Route path="grants/:id" element={<AdminGrantFormPage />} />
+              <Route path="plans" element={<AdminPlansPage />} />
+              <Route path="companies" element={<AdminCompaniesPage />} />
+              <Route path="ingestion" element={<AdminIngestionPage />} />
+              <Route path="users" element={<AdminUsersPage />} />
+              <Route path="subscriptions" element={<AdminSubscriptionsPage />} />
+            </Route>
           </Routes>
         </BrowserRouter>
       </AuthProvider>

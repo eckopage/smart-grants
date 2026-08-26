@@ -90,4 +90,13 @@ export class SubscriptionsService {
       .findByIdAndUpdate(subscriptionId, { payuOrderId })
       .exec();
   }
+
+  findAllActive(): Promise<SubscriptionDocument[]> {
+    return this.subscriptionModel
+      .find({ status: SubscriptionStatus.ACTIVE })
+      .populate('userId', 'email role')
+      .populate('planId', 'key name priceMonthly priceYearly currency')
+      .sort({ createdAt: -1 })
+      .exec();
+  }
 }

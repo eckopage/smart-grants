@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { PlansModule } from '../plans/plans.module';
+import { AdminSubscriptionsController } from './admin-subscriptions.controller';
 import { ActiveSubscriptionGuard } from './guards/active-subscription.guard';
 import {
   Subscription,
@@ -16,7 +17,7 @@ import { SubscriptionsService } from './subscriptions.service';
     ]),
     PlansModule,
   ],
-  controllers: [SubscriptionsController],
+  controllers: [SubscriptionsController, AdminSubscriptionsController],
   providers: [SubscriptionsService, ActiveSubscriptionGuard],
   exports: [SubscriptionsService, ActiveSubscriptionGuard],
 })
