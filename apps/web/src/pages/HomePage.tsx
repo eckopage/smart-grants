@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { Link } from 'react-router-dom';
 import { fetchHealth } from '../lib/api-client';
 
 export function HomePage() {
@@ -26,6 +27,12 @@ export function HomePage() {
           <span className="text-emerald-600">API status: {data.status}</span>
         )}
       </div>
+      <Link
+        to="/grants"
+        className="rounded bg-slate-900 px-4 py-2 text-white"
+      >
+        Przeglądaj dotacje
+      </Link>
     </main>
   );
 }

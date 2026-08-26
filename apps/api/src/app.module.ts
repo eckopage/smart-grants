@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { AuthModule } from './auth/auth.module';
 import { validateEnv } from './config/env.validation';
 import { DatabaseModule } from './database/database.module';
+import { GrantsModule } from './grants/grants.module';
 import { HealthModule } from './health/health.module';
 import { UsersModule } from './users/users.module';
 
@@ -19,6 +20,7 @@ import { UsersModule } from './users/users.module';
     HealthModule,
     UsersModule,
     AuthModule,
+    GrantsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -4,9 +4,10 @@ Platforma agregująca dotacje i kredyty unijne oraz krajowe dla polskich
 przedsiębiorców (MŚP). Model: subskrypcja dla przedsiębiorców + marketplace
 leadów dla firm doradczych.
 
-> **Status:** Faza 1 — Auth (rejestracja/logowanie/JWT). Kolejne fazy (model
-> `Grant`, mapa, płatności, marketplace firm, workspace aplikacji, scraper,
-> SEO) będą dodawane etapami — patrz specyfikacja projektu.
+> **Status:** Faza 2 — model `Grant` + CRUD admina + lista/filtrowanie/widok
+> szczegółowy. Kolejne fazy (mapa, płatności, marketplace firm, workspace
+> aplikacji, scraper, SEO) będą dodawane etapami — patrz specyfikacja
+> projektu.
 
 ## Struktura repozytorium
 
@@ -92,6 +93,19 @@ serwisowym `mongo:7`.
 - `POST /auth/register`, `POST /auth/login`, `POST /auth/refresh`,
   `POST /auth/logout`, `GET /auth/me` — rejestracja i logowanie (JWT access +
   refresh token w httpOnly cookie, hasła hashowane argon2)
+- `GET /grants`, `GET /grants/:slug` — publiczna lista (z filtrowaniem:
+  województwo, kategoria, tagi, typ, status naboru, kwota, termin) i widok
+  szczegółowy dotacji
+- `POST/GET/PATCH/DELETE /admin/grants(/:id)` — CRUD dotacji dla roli `admin`
+
+### Dane przykładowe
+
+```bash
+npm run seed:grants --workspace=api
+```
+
+Wypełnia bazę kilkoma przykładowymi dotacjami (dotacja regionalna, kredyt
+BGK, program centralny UE) do celów developerskich.
 
 ## Architektura pod przyszłe wymagania
 
